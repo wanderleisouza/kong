@@ -1,0 +1,18 @@
+== Generating a Self-Signed Certificate
+
+NOTE: PKCS12: Public Key Cryptographic Standards is a password protected format that can contain multiple certificates and keys; it's an industry-wide used format
+
+We can use either of keytool to generate the certificates from the command line. Keytool is shipped with Java Runtime Environment.
+
+=== Generating a keystore and self-signed cerificates
+
+Now we'll create a set of cryptographic keys and store it in a keystore.
+We can use the following command to generate our PKCS12 keystore format:
+
+	keytool -genkeypair -alias kong -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore kong.p12 -validity 3650
+ 
+	openssl pkcs12 -in kong.p12 -nocerts -out kong.key
+	openssl pkcs12 -in kong.p12 -clcerts -nokeys -out kong.crt
+	openssl rsa -in kong.key -out kong.key 
+	
+NOTE: remember these passwords, they will be needed in the future (password: kong123)
