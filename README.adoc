@@ -26,15 +26,23 @@ Konga is a non-official GUI for kong administration (official Kong Admin GUI is 
 
 	curl -i -X POST --url http://localhost:8001/services/ --data 'name=customer' --data 'url=http://docker.for.mac.localhost:8080'
 
+	curl -i -X POST --url http://localhost:8001/services/ --data 'name=uaa' --data 'url=http://docker.for.mac.localhost:9191'
+
 IMPORTANT: Kong is running in a docker container using `--network=kong-net` when calling services on same machine remember to replace `http://localhost` by `http://docker.for.mac.localhost`
 
 *Routes* specify how (and if) requests are sent to their services after they reach Kong.
 
 	curl -i -X POST --url http://localhost:8001/services/customer/routes --data 'paths[]=/v2/customers'
 
+	curl -i -X POST --url http://localhost:8001/services/uaa/routes --data 'paths[]=/uaa'
+
 and action... 
   
-IMPORTANT: Customer service must be up and running...
+IMPORTANT: Customer and UAA services must be up and running...
   
-	curl -s http://localhost:8000/v2/customers/29bf7bc3-eb4e-432a-b192-1cdc3805ddab	| pjson
+	curl --location --request POST 'localhost:8000/uaa/oauth/token?grant_type=password&username=jane-doe&password=jane-doe123&scope=READ%20WRITE' \
+--header 'Authorization: Basic YXBwLW1vYmlsZTphcHAtbW9iaWxlMTIz'
+
+	curl --location --request GET 'http://localhost:8000/v2/customers/1' \
+--header 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOlsicGF5bWVudCIsImN1c3RvbWVyIl0sInVzZXJfbmFtZSI6ImphbmUtZG9lIiwic2NvcGUiOlsiUkVBRCIsIldSSVRFIl0sImV4cCI6MTU3OTY5MjU0NywiYXV0aG9yaXRpZXMiOlsiY2FuX2NyZWF0ZSIsImNhbl9yZWFkIiwiUk9MRV9VU0VSIiwiY2FuX3VwZGF0ZSJdLCJqdGkiOiIzZGY1Y2IxZS03ZTRjLTRlY2UtODdjNy05MjM0OWM1NWQ1MjEiLCJlbWFpbCI6ImphbmVAbWFpbC5jb20iLCJjbGllbnRfaWQiOiJhcHAtbW9iaWxlIn0.NHlO14NyOXrL4kTy7ktJs9439a0_trkG7DeLyhv5TLx7G7iWTQfqcwXQwzy0ilVwgUO8-pxy12Ro6PmhWlEilvQPgEVYz8lhqsZE33-niQzCYlCztpe4bKwOqyBgE7V17QgHEOsotHHxhzv716MoqJCfA1aqiHIfmPyYCtZIbZuPYFWOYGqniuTDF6-9DGRwFGbp98Oj5PTf0-Obs3qj3KuLH6o-h5aRtqAyUcwbHIDN4nHX2VfoLE2oxuUUmaytzEcT0LvYcie8VfjVrIEpUuEH6qHaDW9d_eBFAyriwZB1Osczo55kBRixLaquJ1KfYfbV73zjoWe5slAX2N7xXw'
 	
