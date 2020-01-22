@@ -30,75 +30,11 @@ IMPORTANT: Kong is running in a docker container using `--network=kong-net` when
 
 *Routes* specify how (and if) requests are sent to their services after they reach Kong.
 
-	curl -i -X POST --url http://localhost:8001/services/customer/routes --data 'paths[]=/v2/customers' --data 'paths[]=/uaa'
+	curl -i -X POST --url http://localhost:8001/services/customer/routes --data 'paths[]=/v2/customers'
 
 and action... 
   
 IMPORTANT: Customer service must be up and running...
   
 	curl -s http://localhost:8000/v2/customers/29bf7bc3-eb4e-432a-b192-1cdc3805ddab	| pjson
-
-
-== Enabling Oauth2 Authorization Server plugin in Kong 
-
-https://docs.konghq.com/hub/kong-inc/oauth2/
-
-OAuth 2 Plug-in Activation for *global* kong api-gateway
-
-	curl -X POST http://localhost:8001/plugins --data 'name=oauth2' --data 'config.enable_client_credentials=true' --data 'config.enable_password_grant=true' --data 'config.global_credentials=true'
-
-NOTE: now /customers/{...} is protected and will not be acessible without an OAuth Access Token.
-
-== Creating Kong Consumers (OAuth2 Users and Clients)
-
-The Consumer object represents a consumer - or a *user* - of a Service. You can either rely on Kong as the primary datastore, or you can map the consumer list with your database to keep consistency between Kong and your existing primary datastore (https://github.com/Kong/kong/issues/1805). 
-
-You need to associate a credential (a Consumer can have many credentials) to an existing Consumer object. To create a Consumers, you can execute the following requests:
-
-	curl -X POST http://127.0.0.1:8001/consumers/ --data 'username=jane@mail.com'   --data 'custom_id=29bf7bc3-eb4e-432a-b192-1cdc3805ddab' --data 'tags=resource_owner'
-	curl -X POST http://127.0.0.1:8001/consumers/ --data 'username=john@mail.com'   --data 'custom_id=73552f16-8ad9-473a-ad05-aed5732b9258' --data 'tags=resource_owner'
-	curl -X POST http://127.0.0.1:8001/consumers/ --data 'username=judite@mail.com' --data 'custom_id=d0155af9-7add-44c6-bea5-4bccc1e939e1' --data 'tags=resource_owner'
-	curl -X POST http://127.0.0.1:8001/consumers/ --data 'username=chuck@mail.com'  --data 'custom_id=da0f87c8-7c4e-4653-b87c-be7a95285937' --data 'tags=resource_owner'
-
-	curl -X POST http://127.0.0.1:8001/consumers/ --data 'username=app-mobile' --data 'tags=client'
-	curl -X POST http://127.0.0.1:8001/consumers/ --data 'username=tc'         --data 'tags=client'
-
-To verify a consumer detail, `/consumers/{consumer username or id}` ... 
-
-	curl -s http://localhost:8001/consumers/jane@mail.com | pjson
-
-=== Creating credentials
-
-Then you can finally provision new OAuth 2.0 credentials (also called “OAuth Client Applications”) by making the following HTTP request:
-	
-	curl -X POST http://127.0.0.1:8001/consumers/tc/oauth2 \
-    --data 'name=tc' \
-    --data 'redirect_uris[]=http://some-domain/endpoint/' \
-    --data 'client_id=tc' \
-    --data 'client_secret=tc123'
-
-	curl -X POST http://127.0.0.1:8001/consumers/app-mobile/oauth2 \
-    --data 'name=app-mobile' \
-    --data 'redirect_uris[]=http://some-domain/endpoint/' \
-    --data 'client_id=app-mobile' \
-    --data 'client_secret=app-mobile123'
-
-To verify an OAuth credential, `/oauth2/{consumer username or id}` ... 
-
-	curl -s http://localhost:8001/oauth2/tc | pjson
-
-== OAuth Flows
-
-=== *Client* Credentials
-
-	curl -s --location --request POST 'https://localhost:8443/uaa/oauth2/token'  --data 'grant_type=client_credentials' --data 'client_id=tc' --data 'client_secret=tc123' --insecure | pjson
-
-NOTE: OAuth2 Authorization Server does not return a refresh_token for client credentials flow
-
-You can verify the token details using... 
-
-	curl -s X GET http://127.0.0.1:8001/oauth2_tokens/nGtAP5L1m3p7HqaDuN1fQlGFvzEZXp92 | pjson
-
-
-	
 	
